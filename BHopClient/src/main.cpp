@@ -4,6 +4,9 @@
 #include "offsets.hpp"
 #include "buttons.hpp"
 
+#define JUMP_TRIGGER_ON 65537
+#define JUMP_TRIGGER_OFF 256
+
 static DWORD getPID(const wchar_t* processName) {
 	DWORD pid = 0;
 
@@ -102,17 +105,21 @@ int main() {
 
 				const bool inAir = flags & (1 << 0);
 				const bool spacePressed = GetAsyncKeyState(VK_SPACE);
-				const auto forceJump = driver::readMemory<DWORD>(driver, client + cs2_dumper::buttons::jump);
+				const auto forceJump =
+					driver::readMemory<DWORD>(driver, client + cs2_dumper::buttons::jump);
 
 				if (spacePressed && inAir) {
 					Sleep(5);
-					driver::writeMemory(driver, client + cs2_dumper::buttons::jump, 65537);
+					std::cout << "Fired 1\n";
+					driver::writeMemory(driver, client + cs2_dumper::buttons::jump, JUMP_TRIGGER_ON);
 				}
 				else if (spacePressed && !inAir) {
-					driver::writeMemory(driver, client + cs2_dumper::buttons::jump, 256);
+					std::cout << "Fired 2\n";
+					driver::writeMemory(driver, client + cs2_dumper::buttons::jump, JUMP_TRIGGER_OFF);
 				}
-				else if (!spacePressed && forceJump == 65537) {
-					driver::writeMemory(driver, client + cs2_dumper::buttons::jump, 256);
+				else if (!spacePressed && forceJump == JUMP_TRIGGER_ON) {
+					std::cout << "Fired 3\n";
+					driver::writeMemory(driver, client + cs2_dumper::buttons::jump, JUMP_TRIGGER_OFF);
 				}
 			}
 		}
